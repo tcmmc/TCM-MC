@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
 <meta charset="UTF-8">
 <title>TCM Admin Panel</title>
@@ -19,13 +20,14 @@
 
 <br><br>
 
-<button id="save">ذخیره تغییرات</button>
+<button id="save">ثبت تغییرات</button>
 
 
 <script type="module">
 
 import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 
 import { 
 getFirestore,
@@ -34,6 +36,7 @@ setDoc,
 getDoc
 }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 
 const firebaseConfig = {
@@ -53,6 +56,7 @@ appId: "1:490709082172:web:6ec840d278caef9112a339"
 };
 
 
+
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
@@ -66,47 +70,50 @@ const save = document.getElementById("save");
 
 
 
-// گرفتن اطلاعات قبلی
 
-async function load(){
+// خواندن اطلاعات قبلی
+
+async function loadData(){
 
 try{
 
-const snap = await getDoc(
+const data = await getDoc(
 doc(db,"Site","info")
 );
 
 
-if(snap.exists()){
+if(data.exists()){
 
-let data = snap.data();
+let info = data.data();
 
-title.value = data.title || "";
-ip.value = data.ip || "";
-description.value = data.description || "";
-
-}
-
-
-}catch(e){
-
-alert("خطا در خواندن اطلاعات");
-
-console.log(e);
+title.value = info.title || "";
+ip.value = info.ip || "";
+description.value = info.description || "";
 
 }
 
 }
 
+catch(error){
 
-load();
+alert("خطا در اتصال به Firebase");
+
+console.log(error);
+
+}
+
+}
+
+
+
+loadData();
 
 
 
 
-// ذخیره
+// ذخیره اطلاعات
 
-save.onclick = async ()=>{
+save.onclick = async function(){
 
 
 try{
@@ -118,11 +125,11 @@ doc(db,"Site","info"),
 
 {
 
-title:title.value,
+title: title.value,
 
-ip:ip.value,
+ip: ip.value,
 
-description:description.value
+description: description.value
 
 }
 
@@ -134,11 +141,13 @@ alert("ذخیره شد ✅");
 
 }
 
-catch(e){
+catch(error){
 
-alert("خطا در ذخیره");
 
-console.log(e);
+alert("خطا در ذخیره اطلاعات");
+
+console.log(error);
+
 
 }
 
