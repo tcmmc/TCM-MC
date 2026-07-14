@@ -1,35 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
-<title>TCM Admin Panel</title>
 <meta charset="UTF-8">
+<title>TCM Admin Panel</title>
 </head>
 
 <body>
 
 <h1>پنل مدیریت TCM 👑</h1>
 
-<br>
+<input id="title" placeholder="عنوان سایت">
+<br><br>
 
-<label>عنوان سایت</label>
-<br>
-<input id="title">
+<input id="ip" placeholder="IP سرور">
+<br><br>
+
+<textarea id="description" placeholder="توضیحات"></textarea>
 
 <br><br>
 
-<label>IP سرور</label>
-<br>
-<input id="ip">
-
-<br><br>
-
-<label>توضیحات</label>
-<br>
-<textarea id="description"></textarea>
-
-<br><br>
-
-<button id="save">ذخیره</button>
+<button id="save">ذخیره تغییرات</button>
 
 
 <script type="module">
@@ -37,23 +27,29 @@
 import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-
 import { 
 getFirestore,
 doc,
-setDoc
+setDoc,
+getDoc
 }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
-
 const firebaseConfig = {
+
 apiKey: "AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
+
 authDomain: "tcm-mc-173a6.firebaseapp.com",
+
 projectId: "tcm-mc-173a6",
+
 storageBucket: "tcm-mc-173a6.firebasestorage.app",
+
 messagingSenderId: "490709082172",
+
 appId: "1:490709082172:web:6ec840d278caef9112a339"
+
 };
 
 
@@ -63,23 +59,92 @@ const db = getFirestore(app);
 
 
 
-document.getElementById("save").onclick = async ()=>{
+const title = document.getElementById("title");
+const ip = document.getElementById("ip");
+const description = document.getElementById("description");
+const save = document.getElementById("save");
+
+
+
+// گرفتن اطلاعات قبلی
+
+async function load(){
+
+try{
+
+const snap = await getDoc(
+doc(db,"Site","info")
+);
+
+
+if(snap.exists()){
+
+let data = snap.data();
+
+title.value = data.title || "";
+ip.value = data.ip || "";
+description.value = data.description || "";
+
+}
+
+
+}catch(e){
+
+alert("خطا در خواندن اطلاعات");
+
+console.log(e);
+
+}
+
+}
+
+
+load();
+
+
+
+
+// ذخیره
+
+save.onclick = async ()=>{
+
+
+try{
 
 
 await setDoc(
+
 doc(db,"Site","info"),
+
 {
-title: document.getElementById("title").value,
-ip: document.getElementById("ip").value,
-description: document.getElementById("description").value
+
+title:title.value,
+
+ip:ip.value,
+
+description:description.value
+
 }
+
 );
 
 
 alert("ذخیره شد ✅");
 
 
+}
+
+catch(e){
+
+alert("خطا در ذخیره");
+
+console.log(e);
+
+}
+
+
 };
+
 
 
 </script>
