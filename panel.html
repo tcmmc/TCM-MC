@@ -2,370 +2,135 @@
 <html lang="fa" dir="rtl">
 
 <head>
+    <meta charset="UTF-8">
+    <title>TCM Admin Panel</title>
+    <style>
+        body {
+            font-family: tahoma;
+            padding: 30px;
+            background: #111;
+            color: white;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+        }
 
-<title>TCM Admin Panel</title>
+        button {
+            padding: 12px 20px;
+            margin-top: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            background: #0066cc;
+            color: white;
+            border: none;
+        }
 
-<style>
+        button:hover {
+            background: #0055aa;
+        }
 
-body{
-font-family:tahoma;
-background:#111;
-color:white;
-padding:30px;
-}
-
-input,textarea{
-
-width:100%;
-padding:12px;
-margin:10px 0;
-box-sizing:border-box;
-
-}
-
-textarea{
-height:120px;
-}
-
-button{
-
-padding:12px 25px;
-cursor:pointer;
-margin:5px;
-
-}
-
-#panel{
-
-display:none;
-
-}
-
-</style>
-
+        #panel {
+            max-width: 800px;
+        }
+    </style>
 </head>
-
 
 <body>
 
-
-<div id="panel">
-
-
-<h1>پنل مدیریت TCM 👑</h1>
-
-
-<label>عنوان سایت</label>
-
-<input id="title">
-
-
-
-<label>IP سرور</label>
-
-<input id="ip">
-
-
-
-<label>توضیحات</label>
-
-<textarea id="description"></textarea>
-
-
-
-<button id="save">
-ذخیره
-</button>
-
-
-<button id="logout">
-خروج
-</button>
-
-
-</div>
-
-
-
-
-<script type="module">
-
-
-import { initializeApp }
-
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-
-
-import {
-
-getFirestore,
-doc,
-setDoc,
-getDoc
-
-}
-
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-
-
-import {
-
-getAuth,
-onAuthStateChanged,
-signOut
-
-}
-
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-
-
-
-
-const firebaseConfig = {
-
-
-apiKey:"AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
-
-authDomain:"tcm-mc-173a6.firebaseapp.com",
-
-projectId:"tcm-mc-173a6",
-
-storageBucket:"tcm-mc-173a6.firebasestorage.app",
-
-messagingSenderId:"490709082172",
-
-appId:"1:490709082172:web:6ec840d278caef9112a339"
-
-
-};
-
-
-
-
-
-const app = initializeApp(firebaseConfig);
-
-
-const db = getFirestore(app);
-
-
-const auth = getAuth(app);
-
-
-
-
-
-const panel = document.getElementById("panel");
-
-
-const titleInput = document.getElementById("title");
-
-const ipInput = document.getElementById("ip");
-
-const descriptionInput = document.getElementById("description");
-
-
-const saveBtn = document.getElementById("save");
-
-const logoutBtn = document.getElementById("logout");
-
-
-
-
-
-// اول قفل باشه
-
-panel.style.display="none";
-
-
-
-
-
-
-onAuthStateChanged(auth, async(user)=>{
-
-
-// اگر لاگین نیست
-
-if(!user){
-
-
-window.location.replace("admin.html");
-
-
-return;
-
-
-}
-
-
-
-
-
-// اگر لاگین هست
-
-panel.style.display="block";
-
-
-
-
-
-
-try{
-
-
-const snap = await getDoc(
-
-doc(db,"site","info")
-
-);
-
-
-
-if(snap.exists()){
-
-
-const data=snap.data();
-
-
-titleInput.value=data.title || "";
-
-ipInput.value=data.ip || "";
-
-descriptionInput.value=data.description || "";
-
-
-}
-
-
-
-}
-
-catch(error){
-
-
-console.log(error);
-
-
-}
-
-
-
-});
-
-
-
-
-
-
-
-
-saveBtn.onclick = async()=>{
-
-
-const user = auth.currentUser;
-
-
-
-if(!user){
-
-
-alert("دسترسی ندارید");
-
-
-window.location.replace("admin.html");
-
-
-return;
-
-
-}
-
-
-
-
-try{
-
-
-await setDoc(
-
-doc(db,"site","info"),
-
-{
-
-
-title:titleInput.value,
-
-ip:ipInput.value,
-
-description:descriptionInput.value,
-
-updatedAt:Date.now()
-
-
-}
-
-);
-
-
-
-
-alert("✅ اطلاعات ذخیره شد");
-
-
-
-}
-
-catch(error){
-
-
-console.log(error);
-
-
-alert(error.message);
-
-
-
-}
-
-
-
-};
-
-
-
-
-
-
-
-
-
-logoutBtn.onclick=()=>{
-
-
-signOut(auth).then(()=>{
-
-
-window.location.replace("admin.html");
-
-
-});
-
-
-};
-
-
-
-
-</script>
-
+    <h1>پنل مدیریت TCM 👑</h1>
+
+    <div id="panel" style="display: none;">
+
+        <label>عنوان سایت</label>
+        <input id="title">
+
+        <label>IP سرور</label>
+        <input id="ip">
+
+        <label>توضیحات</label>
+        <textarea id="description" rows="5"></textarea>
+
+        <div>
+            <button id="save">ذخیره</button>
+            <button id="logout">خروج</button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
+            authDomain: "tcm-mc-173a6.firebaseapp.com",
+            projectId: "tcm-mc-173a6",
+            storageBucket: "tcm-mc-173a6.firebasestorage.app",
+            messagingSenderId: "490709082172",
+            appId: "1:490709082172:web:6ec840d278caef9112a339"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const panel = document.getElementById("panel");
+            const titleInput = document.getElementById("title");
+            const ipInput = document.getElementById("ip");
+            const descriptionInput = document.getElementById("description");
+            const saveBtn = document.getElementById("save");
+            const logoutBtn = document.getElementById("logout");
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.replace("admin.html");
+                    return;
+                }
+
+                panel.style.display = "block";
+
+                try {
+                    const snap = await getDoc(doc(db, "site", "info"));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        titleInput.value = data.title || "";
+                        ipInput.value = data.ip || "";
+                        descriptionInput.value = data.description || "";
+                    }
+                } catch (e) {
+                    console.error("خطا در لود اطلاعات:", e);
+                }
+            });
+
+            saveBtn.addEventListener("click", async () => {
+                try {
+                    await setDoc(doc(db, "site", "info"), {
+                        title: titleInput.value,
+                        ip: ipInput.value,
+                        description: descriptionInput.value,
+                        updated: new Date().toISOString()
+                    });
+                    alert("✅ با موفقیت ذخیره شد");
+                } catch (e) {
+                    alert("خطا در ذخیره: " + e.message);
+                }
+            });
+
+            logoutBtn.addEventListener("click", () => {
+                signOut(auth).then(() => {
+                    window.location.replace("admin.html");
+                });
+            });
+        });
+    </script>
 
 </body>
-
 </html>
