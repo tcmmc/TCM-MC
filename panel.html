@@ -7,29 +7,82 @@
 
 <body>
 
-<h1>پنل مدیریت TCM</h1>
+<h1>پنل مدیریت TCM 👑</h1>
 
-<p>خوش آمدی ادمین 👑</p>
+<br>
 
-<hr>
-
-<h3>تغییرات سایت</h3>
-
-<input placeholder="عنوان سایت">
+<label>عنوان سایت</label>
+<br>
+<input id="title">
 
 <br><br>
 
-<input placeholder="IP سرور">
+<label>IP سرور</label>
+<br>
+<input id="ip">
 
 <br><br>
 
-<textarea placeholder="توضیحات"></textarea>
+<label>توضیحات</label>
+<br>
+<textarea id="description"></textarea>
 
 <br><br>
 
-<button>
-ذخیره تغییرات
-</button>
+<button id="save">ذخیره</button>
+
+
+<script type="module">
+
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+
+import { 
+getFirestore,
+doc,
+setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
+authDomain: "tcm-mc-173a6.firebaseapp.com",
+projectId: "tcm-mc-173a6",
+storageBucket: "tcm-mc-173a6.firebasestorage.app",
+messagingSenderId: "490709082172",
+appId: "1:490709082172:web:6ec840d278caef9112a339"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+
+document.getElementById("save").onclick = async ()=>{
+
+
+await setDoc(
+doc(db,"Site","info"),
+{
+title: document.getElementById("title").value,
+ip: document.getElementById("ip").value,
+description: document.getElementById("description").value
+}
+);
+
+
+alert("ذخیره شد ✅");
+
+
+};
+
+
+</script>
 
 
 </body>
