@@ -1,66 +1,44 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <title>TCM Admin Panel</title>
     <style>
-        body {
-            font-family: tahoma;
-            padding: 30px;
-            background: #111;
-            color: white;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            background: #222;
-            border: 1px solid #444;
-            color: white;
-        }
-
-        button {
-            padding: 12px 20px;
-            margin-top: 20px;
-            margin-left: 10px;
-            cursor: pointer;
-            background: #0066cc;
-            color: white;
-            border: none;
-        }
-
-        button:hover {
-            background: #0055aa;
-        }
-
-        #panel {
-            max-width: 800px;
-        }
+        body {font-family:tahoma; padding:30px; background:#111; color:white;}
+        input, textarea {width:100%; padding:10px; margin:8px 0; background:#222; border:1px solid #444; color:white;}
+        button {padding:12px 20px; margin:10px 5px; cursor:pointer; background:#0066cc; color:white; border:none;}
+        button:hover {background:#0055aa;}
+        .item {margin:15px 0; padding:15px; background:#1a1a1a; border:1px solid #333;}
+        h2 {margin-top:30px;}
     </style>
 </head>
-
 <body>
-
     <h1>پنل مدیریت TCM 👑</h1>
+    <div id="panel" style="display:none">
 
-    <div id="panel" style="display: none;">
-
+        <!-- اطلاعات اصلی -->
+        <h2>اطلاعات اصلی سایت</h2>
         <label>عنوان سایت</label>
         <input id="title">
 
         <label>IP سرور</label>
         <input id="ip">
 
-        <label>توضیحات</label>
-        <textarea id="description" rows="5"></textarea>
+        <label>توضیحات کوتاه</label>
+        <textarea id="description" rows="3"></textarea>
 
-        <div>
-            <button id="save">ذخیره</button>
-            <button id="logout">خروج</button>
-        </div>
+        <!-- قوانین -->
+        <h2>قوانین سرور</h2>
+        <div id="rules-container"></div>
+        <button id="add-rule">+ قانون جدید</button>
 
+        <!-- FAQ -->
+        <h2>سوالات متداول</h2>
+        <div id="faq-container"></div>
+        <button id="add-faq">+ سوال جدید</button>
+
+        <button id="save" style="background:#28a745; font-size:16px;">ذخیره همه تغییرات</button>
+        <button id="logout">خروج</button>
     </div>
 
     <script type="module">
@@ -81,56 +59,79 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        let rules = [];
+        let faqs = [];
+
         document.addEventListener("DOMContentLoaded", () => {
             const panel = document.getElementById("panel");
-            const titleInput = document.getElementById("title");
-            const ipInput = document.getElementById("ip");
-            const descriptionInput = document.getElementById("description");
-            const saveBtn = document.getElementById("save");
-            const logoutBtn = document.getElementById("logout");
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
                     window.location.replace("admin.html");
                     return;
                 }
-
                 panel.style.display = "block";
-
-                try {
-                    const snap = await getDoc(doc(db, "site", "info"));
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        titleInput.value = data.title || "";
-                        ipInput.value = data.ip || "";
-                        descriptionInput.value = data.description || "";
-                    }
-                } catch (e) {
-                    console.error("خطا در لود اطلاعات:", e);
-                }
+                await loadAllData();
             });
 
-            saveBtn.addEventListener("click", async () => {
-                try {
-                    await setDoc(doc(db, "site", "info"), {
-                        title: titleInput.value,
-                        ip: ipInput.value,
-                        description: descriptionInput.value,
-                        updated: new Date().toISOString()
-                    });
-                    alert("✅ با موفقیت ذخیره شد");
-                } catch (e) {
-                    alert("خطا در ذخیره: " + e.message);
-                }
-            });
-
-            logoutBtn.addEventListener("click", () => {
-                signOut(auth).then(() => {
-                    window.location.replace("admin.html");
-                });
-            });
+            document.getElementById("add-rule").onclick = () => { rules.push({num: rules.length+1, title:"", text:""}); renderRules(); };
+            document.getElementById("add-faq").onclick = () => { faqs.push({q:"", a:""}); renderFaqs(); };
+            document.getElementById("save").onclick = saveAll;
+            document.getElementById("logout").onclick = () => signOut(auth).then(() => window.location.replace("admin.html"));
         });
-    </script>
 
+        async function loadAllData() {
+            try {
+                const snap = await getDoc(doc(db,"site","info"));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById("title").value = data.title || "";
+                    document.getElementById("ip").value = data.ip || "";
+                    document.getElementById("description").value = data.description || "";
+                    rules = data.rules || [];
+                    faqs = data.faqs || [];
+                    renderRules();
+                    renderFaqs();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderRules() {
+            const container = document.getElementById("rules-container");
+            container.innerHTML = rules.map((r,i) => `
+                <div class="item">
+                    <input style="width:60px" value="\( {r.num}" onchange="rules[ \){i}].num=this.value">
+                    <input placeholder="عنوان" value="\( {r.title}" onchange="rules[ \){i}].title=this.value">
+                    <textarea rows="3" placeholder="متن قانون" onchange="rules[\( {i}].text=this.value"> \){r.text}</textarea>
+                    <button onclick="rules.splice(${i},1);renderRules()">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        function renderFaqs() {
+            const container = document.getElementById("faq-container");
+            container.innerHTML = faqs.map((f,i) => `
+                <div class="item">
+                    <input placeholder="سوال" value="\( {f.q}" onchange="faqs[ \){i}].q=this.value">
+                    <textarea rows="3" placeholder="جواب" onchange="faqs[\( {i}].a=this.value"> \){f.a}</textarea>
+                    <button onclick="faqs.splice(${i},1);renderFaqs()">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        async function saveAll() {
+            try {
+                await setDoc(doc(db,"site","info"), {
+                    title: document.getElementById("title").value,
+                    ip: document.getElementById("ip").value,
+                    description: document.getElementById("description").value,
+                    rules: rules,
+                    faqs: faqs,
+                    updated: new Date().toISOString()
+                });
+                alert("✅ همه چیز ذخیره شد");
+            } catch(e) { alert("خطا: " + e.message); }
+        }
+    </script>
 </body>
 </html>
