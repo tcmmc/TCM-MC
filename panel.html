@@ -1,60 +1,22 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-
-<head>
-<meta charset="UTF-8">
-<title>TCM Admin Panel</title>
-</head>
-
-<body>
-
-<h1>پنل مدیریت TCM 👑</h1>
-
-<input id="title" placeholder="عنوان سایت">
-<br><br>
-
-<input id="ip" placeholder="IP سرور">
-<br><br>
-
-<textarea id="description" placeholder="توضیحات"></textarea>
-
-<br><br>
-
-<button id="save">ثبت تغییرات</button>
-
-
 <script type="module">
 
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-
-import { 
+import {
 getFirestore,
 doc,
-setDoc,
-getDoc
-}
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
 const firebaseConfig = {
-
 apiKey: "AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
-
 authDomain: "tcm-mc-173a6.firebaseapp.com",
-
 projectId: "tcm-mc-173a6",
-
 storageBucket: "tcm-mc-173a6.firebasestorage.app",
-
 messagingSenderId: "490709082172",
-
 appId: "1:490709082172:web:6ec840d278caef9112a339"
-
 };
-
 
 
 const app = initializeApp(firebaseConfig);
@@ -62,78 +24,19 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
+document.getElementById("save").onclick = async ()=>{
 
-const title = document.getElementById("title");
-const ip = document.getElementById("ip");
-const description = document.getElementById("description");
-const save = document.getElementById("save");
+try {
 
+await setDoc(doc(db,"Site","info"),{
 
+title: document.getElementById("title").value,
 
+ip: document.getElementById("ip").value,
 
-// خواندن اطلاعات قبلی
+description: document.getElementById("description").value
 
-async function loadData(){
-
-try{
-
-const data = await getDoc(
-doc(db,"Site","info")
-);
-
-
-if(data.exists()){
-
-let info = data.data();
-
-title.value = info.title || "";
-ip.value = info.ip || "";
-description.value = info.description || "";
-
-}
-
-}
-
-catch(error){
-
-alert("خطا در اتصال به Firebase");
-
-console.log(error);
-
-}
-
-}
-
-
-
-loadData();
-
-
-
-
-// ذخیره اطلاعات
-
-save.onclick = async function(){
-
-
-try{
-
-
-await setDoc(
-
-doc(db,"Site","info"),
-
-{
-
-title: title.value,
-
-ip: ip.value,
-
-description: description.value
-
-}
-
-);
+});
 
 
 alert("ذخیره شد ✅");
@@ -141,13 +44,9 @@ alert("ذخیره شد ✅");
 
 }
 
-catch(error){
+catch(e){
 
-
-alert("خطا در ذخیره اطلاعات");
-
-console.log(error);
-
+alert(e.message);
 
 }
 
@@ -155,9 +54,4 @@ console.log(error);
 };
 
 
-
 </script>
-
-
-</body>
-</html>
