@@ -5,39 +5,30 @@
     <title>TCM Admin Panel</title>
     <style>
         body {font-family:tahoma; padding:30px; background:#111; color:white;}
-        input, textarea {width:100%; padding:10px; margin:8px 0; background:#222; border:1px solid #444; color:white;}
+        input, textarea {width:100%; padding:10px; margin:10px 0; background:#222; border:1px solid #444; color:white;}
         button {padding:12px 20px; margin:10px 5px; cursor:pointer; background:#0066cc; color:white; border:none;}
         button:hover {background:#0055aa;}
-        .item {margin:15px 0; padding:15px; background:#1a1a1a; border:1px solid #333;}
-        h2 {margin-top:30px;}
+        .rule {margin:15px 0; padding:15px; background:#1a1a1a;}
     </style>
 </head>
 <body>
     <h1>پنل مدیریت TCM 👑</h1>
     <div id="panel" style="display:none">
 
-        <!-- اطلاعات اصلی -->
-        <h2>اطلاعات اصلی سایت</h2>
         <label>عنوان سایت</label>
         <input id="title">
 
         <label>IP سرور</label>
         <input id="ip">
 
-        <label>توضیحات کوتاه</label>
-        <textarea id="description" rows="3"></textarea>
+        <label>توضیحات</label>
+        <textarea id="description" rows="4"></textarea>
 
-        <!-- قوانین -->
-        <h2>قوانین سرور</h2>
+        <h3>قوانین</h3>
         <div id="rules-container"></div>
         <button id="add-rule">+ قانون جدید</button>
 
-        <!-- FAQ -->
-        <h2>سوالات متداول</h2>
-        <div id="faq-container"></div>
-        <button id="add-faq">+ سوال جدید</button>
-
-        <button id="save" style="background:#28a745; font-size:16px;">ذخیره همه تغییرات</button>
+        <button id="save">ذخیره</button>
         <button id="logout">خروج</button>
     </div>
 
@@ -60,7 +51,6 @@
         const auth = getAuth(app);
 
         let rules = [];
-        let faqs = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             const panel = document.getElementById("panel");
@@ -71,66 +61,61 @@
                     return;
                 }
                 panel.style.display = "block";
-                await loadAllData();
+                await loadData();
             });
 
-            document.getElementById("add-rule").onclick = () => { rules.push({num: rules.length+1, title:"", text:""}); renderRules(); };
-            document.getElementById("add-faq").onclick = () => { faqs.push({q:"", a:""}); renderFaqs(); };
-            document.getElementById("save").onclick = saveAll;
+            document.getElementById("add-rule").onclick = () => {
+                rules.push({num: rules.length + 1, title: "", text: ""});
+                renderRules();
+            };
+
+            document.getElementById("save").onclick = saveData;
             document.getElementById("logout").onclick = () => signOut(auth).then(() => window.location.replace("admin.html"));
         });
 
-        async function loadAllData() {
+        async function loadData() {
             try {
-                const snap = await getDoc(doc(db,"site","info"));
+                const snap = await getDoc(doc(db, "site", "info"));
                 if (snap.exists()) {
                     const data = snap.data();
-                    document.getElementById("title").value = data.title || "";
-                    document.getElementById("ip").value = data.ip || "";
+                    document.getElementById("title").value = data.title || "TCM MC";
+                    document.getElementById("ip").value = data.ip || "Play.TCMMC.ir";
                     document.getElementById("description").value = data.description || "";
                     rules = data.rules || [];
-                    faqs = data.faqs || [];
                     renderRules();
-                    renderFaqs();
                 }
             } catch(e) { console.error(e); }
         }
 
         function renderRules() {
             const container = document.getElementById("rules-container");
-            container.innerHTML = rules.map((r,i) => `
-                <div class="item">
-                    <input style="width:60px" value="\( {r.num}" onchange="rules[ \){i}].num=this.value">
-                    <input placeholder="عنوان" value="\( {r.title}" onchange="rules[ \){i}].title=this.value">
-                    <textarea rows="3" placeholder="متن قانون" onchange="rules[\( {i}].text=this.value"> \){r.text}</textarea>
-                    <button onclick="rules.splice(${i},1);renderRules()">حذف</button>
-                </div>
-            `).join('');
+            container.innerHTML = "";
+            rules.forEach((r, i) => {
+                const div = document.createElement("div");
+                div.className = "rule";
+                div.innerHTML = `
+                    <input style="width:60px" value="\( {r.num}" onchange="rules[ \){i}].num = this.value">
+                    <input placeholder="عنوان قانون" value="\( {r.title}" onchange="rules[ \){i}].title = this.value">
+                    <textarea rows="3" placeholder="متن قانون" onchange="rules[\( {i}].text = this.value"> \){r.text}</textarea>
+                    <button onclick="rules.splice(${i},1); renderRules()">حذف</button>
+                `;
+                container.appendChild(div);
+            });
         }
 
-        function renderFaqs() {
-            const container = document.getElementById("faq-container");
-            container.innerHTML = faqs.map((f,i) => `
-                <div class="item">
-                    <input placeholder="سوال" value="\( {f.q}" onchange="faqs[ \){i}].q=this.value">
-                    <textarea rows="3" placeholder="جواب" onchange="faqs[\( {i}].a=this.value"> \){f.a}</textarea>
-                    <button onclick="faqs.splice(${i},1);renderFaqs()">حذف</button>
-                </div>
-            `).join('');
-        }
-
-        async function saveAll() {
+        async function saveData() {
             try {
-                await setDoc(doc(db,"site","info"), {
+                await setDoc(doc(db, "site", "info"), {
                     title: document.getElementById("title").value,
                     ip: document.getElementById("ip").value,
                     description: document.getElementById("description").value,
                     rules: rules,
-                    faqs: faqs,
                     updated: new Date().toISOString()
                 });
-                alert("✅ همه چیز ذخیره شد");
-            } catch(e) { alert("خطا: " + e.message); }
+                alert("✅ ذخیره شد");
+            } catch(e) {
+                alert("خطا: " + e.message);
+            }
         }
     </script>
 </body>
