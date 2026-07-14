@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TCM Admin</title>
+</head>
+
+<body>
+
+<h1>پنل ادمین TCM</h1>
+
+<input id="email" placeholder="ایمیل ادمین">
+<br><br>
+
+<input id="password" type="password" placeholder="رمز عبور">
+<br><br>
+
+<button onclick="login()">ورود</button>
+
+
+<script type="module">
+
+import { auth } from "./firebase.js";
+
+import { 
+signInWithEmailAndPassword 
+} from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+
+window.login = function(){
+
+let email = document.getElementById("email").value;
+let password = document.getElementById("password").value;
+
+
+signInWithEmailAndPassword(auth,email,password)
+
+.then(()=>{
+
+alert("ورود موفق شد!");
+
+window.location="panel.html";
+
+})
+
+
+.catch(()=>{
+
+alert("ایمیل یا رمز اشتباه است");
+
+});
+
+
+}
+
+</script>
+
+</body>
+</html>
