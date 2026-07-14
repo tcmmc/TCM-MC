@@ -1,45 +1,10 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 
 <head>
 
 <meta charset="UTF-8">
 <title>TCM Admin Panel</title>
-
-<style>
-
-body{
-font-family:tahoma;
-direction:rtl;
-padding:30px;
-background:#111;
-color:white;
-}
-
-input,textarea{
-
-width:100%;
-padding:12px;
-margin:10px 0;
-border-radius:8px;
-border:none;
-font-size:16px;
-
-}
-
-button{
-
-padding:12px 25px;
-background:#00c853;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;
-
-}
-
-</style>
 
 </head>
 
@@ -47,27 +12,37 @@ cursor:pointer;
 <body>
 
 
-<h1>👑 پنل مدیریت TCM</h1>
+<h1>پنل مدیریت TCM 👑</h1>
+
+
+<br>
 
 
 <label>عنوان سایت</label>
-
+<br>
 <input id="title">
 
 
-<label>IP سرور</label>
+<br><br>
 
+
+<label>IP سرور</label>
+<br>
 <input id="ip">
 
 
-<label>توضیحات</label>
+<br><br>
 
+
+<label>توضیحات</label>
+<br>
 <textarea id="description"></textarea>
 
 
-<button id="save">
-ذخیره تغییرات
-</button>
+<br><br>
+
+
+<button id="save">ذخیره</button>
 
 
 
@@ -78,23 +53,25 @@ import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 
-import {
-
+import { 
 getFirestore,
 doc,
 setDoc,
 getDoc
-
 }
-
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+
+import {
+getAuth,
+onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 
 
 
 const firebaseConfig = {
-
 
 apiKey: "AIzaSyBxhXIVDhXNSisJ0v81ZtdjAZZt9vorNig",
 
@@ -113,29 +90,35 @@ appId: "1:490709082172:web:6ec840d278caef9112a339"
 
 
 
-
 const app = initializeApp(firebaseConfig);
 
 
 const db = getFirestore(app);
 
 
+const auth = getAuth(app);
+
+
+
+
+onAuthStateChanged(auth, async (user)=>{
+
+
+if(!user){
+
+alert("دسترسی ندارید!");
+
+window.location.href="admin.html";
+
+return;
+
+}
 
 
 
 // گرفتن اطلاعات قبلی
 
-
-async function loadData(){
-
-
-try{
-
-
-const snap = await getDoc(
-doc(db,"Site","info")
-);
-
+const snap = await getDoc(doc(db,"site","info"));
 
 
 if(snap.exists()){
@@ -144,104 +127,67 @@ if(snap.exists()){
 let data = snap.data();
 
 
-document.getElementById("title").value =
-data.title || "";
+document.getElementById("title").value = data.title || "";
 
+document.getElementById("ip").value = data.ip || "";
 
-document.getElementById("ip").value =
-data.ip || "";
-
-
-document.getElementById("description").value =
-data.description || "";
-
+document.getElementById("description").value = data.description || "";
 
 
 }
 
 
 
+});
+
+
+
+
+
+document.getElementById("save").onclick = async ()=>{
+
+
+const user = auth.currentUser;
+
+
+if(!user){
+
+alert("لطفا دوباره وارد شوید");
+
+return;
+
 }
 
-catch(error){
-
-alert("خطا در دریافت اطلاعات");
-
-console.log(error);
-
-}
-
-
-}
-
-
-
-
-loadData();
-
-
-
-
-
-
-
-// ذخیره اطلاعات
-
-
-document.getElementById("save").onclick = async()=>{
-
-
-let title =
-document.getElementById("title").value;
-
-
-let ip =
-document.getElementById("ip").value;
-
-
-let description =
-document.getElementById("description").value;
-
-
-
-try{
 
 
 await setDoc(
 
-doc(db,"Site","info"),
+doc(db,"site","info"),
 
 {
 
-title:title,
 
-ip:ip,
+title:
+document.getElementById("title").value,
 
-description:description
+
+ip:
+document.getElementById("ip").value,
+
+
+description:
+document.getElementById("description").value
+
+
 
 }
+
 
 );
 
 
 
-alert("✅ اطلاعات ذخیره شد");
-
-
-}
-
-
-catch(error){
-
-
-alert("❌ خطا: "+error.message);
-
-
-console.log(error);
-
-
-}
-
+alert("ذخیره شد ✅");
 
 
 };
